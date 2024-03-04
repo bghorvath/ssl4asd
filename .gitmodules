@@ -1,0 +1,3 @@
+[submodule "dcase2023_task2_evaluator-main"]
+	path = dcase2023_task2_evaluator-main
+	url = git@github.com:nttcslab/dcase2023_task2_evaluator.git
