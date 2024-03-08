@@ -12,13 +12,9 @@ from mixup_layer import MixupLayer
 from openl3_idea_aug_layer_classwise import AugLayer
 from subcluster_adacos import SCAdaCos
 from scipy.stats import hmean
-from tensorflow.keras import backend as K
 from sklearn.cluster import KMeans
-from sklearn.mixture import GaussianMixture
-from scipy.spatial.distance import cdist
-import tensorflow_probability as tfp
-from sklearn.utils import class_weight
 from statex_aug_layer_classwise import StatExLayer
+from mdam import MultiDimensionalAttention
 
 
 class SqueezeAndExcitationBlock(tf.keras.layers.Layer):
@@ -238,6 +234,9 @@ def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False):
                                 use_bias=use_bias)(xr)
     xr = SqueezeAndExcitationBlock(num_channels=64)(xr)
     x = tf.keras.layers.Add()([x, xr])
+
+    # MDAM
+    x = MultiDimensionalAttention(channels=64)(x)
 
     # fifth block
     x = tf.keras.layers.BatchNormalization()(x)
