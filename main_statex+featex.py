@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import pandas as pd
 import numpy as np
 import keras
@@ -281,6 +282,12 @@ def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False):
 
     return data_input, label_input, loss_output, loss_output_ssl, loss_output_ssl2
 
+parser = ArgumentParser()
+parser.add_argument("--epochs", type=int, default=10)
+parser.add_argument("--batch_size", type=int, default=64)
+parser.add_argument("--aeons", type=int, default=1)
+parser.add_argument("--ensemble_size", type=int, default=5)
+args = parser.parse_args()
 
 ########################################################################################################################
 # Load data and compute embeddings
@@ -446,13 +453,13 @@ eval_domains = eval_domains[eval_normal]
 source_eval = source_eval[eval_normal]
 
 # training parameters
-batch_size = 64
-batch_size_test = 64
-epochs = 10
-aeons = 1
+batch_size = args.batch_size
+batch_size_test = args.batch_size
+epochs = args.epochs
+aeons = args.aeons
 alpha = 1
 n_subclusters = 16
-ensemble_size = 5
+ensemble_size = args.ensemble_size
 
 final_results_dev = np.zeros((ensemble_size, 6))
 final_results_eval = np.zeros((ensemble_size, 6))
