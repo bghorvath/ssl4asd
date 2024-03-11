@@ -15,7 +15,7 @@ from subcluster_adacos import SCAdaCos
 from scipy.stats import hmean
 from sklearn.cluster import KMeans
 from statex_aug_layer_classwise import StatExLayer
-from mdam import MultiDimensionalAttention
+from mdam import MultiDimensionalAttention, FrequencyAttention, TemporalAttention, ChannelAttention
 
 
 class SqueezeAndExcitationBlock(tf.keras.layers.Layer):
@@ -500,7 +500,11 @@ for k_ensemble in np.arange(ensemble_size):
             model = tf.keras.models.load_model(weight_path,
                                                custom_objects={'MixupLayer': MixupLayer, 'mixupLoss': mixupLoss,
                                                                'SCAdaCos': SCAdaCos,
-                                                               'MagnitudeSpectrogram': MagnitudeSpectrogram, 'AugLayer': AugLayer, 'StatExLayer': StatExLayer, 'SqueezeAndExcitationBlock': SqueezeAndExcitationBlock})
+                                                               'MagnitudeSpectrogram': MagnitudeSpectrogram, 'AugLayer': AugLayer, 'StatExLayer': StatExLayer, 'SqueezeAndExcitationBlock': SqueezeAndExcitationBlock,
+                                                                'MultiDimensionalAttention': MultiDimensionalAttention,
+                                                                'ChannelAttention': ChannelAttention,
+                                                                'TemporalAttention': TemporalAttention,
+                                                                'FrequencyAttention': FrequencyAttention})
 
         # extract embeddings
         emb_model = tf.keras.Model(model.input, model.layers[-8].output)
