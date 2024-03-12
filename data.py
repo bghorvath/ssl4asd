@@ -118,8 +118,14 @@ def load_data():
         eps = 1e-12
         for label, category in enumerate(os.listdir("./eval_data/")):
             print(category)
-            for count, file in tqdm(enumerate(os.listdir("./eval_data/" + category + "/test")),
-                                    total=len(os.listdir("./eval_data/" + category + "/test"))):
+
+            def extract_index(file_name):
+                return int(file_name[-8:-4])
+
+            file_list = sorted(os.listdir("./eval_data/" + category + "/test"), key=extract_index)
+
+            for count, file in tqdm(enumerate(file_list),
+                                    total=len(file_list)):
                 if file.endswith('.wav'):
                     file_path = "./eval_data/" + category + "/test/" + file
                     wav, fs = sf.read(file_path)
