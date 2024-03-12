@@ -97,7 +97,7 @@ def length_norm(mat):
     return norm_mat
 
 
-def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False):
+def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False, mdam=False):
     data_input = tf.keras.layers.Input(shape=(raw_dim, 1), dtype='float32')
     label_input = tf.keras.layers.Input(shape=(num_classes), dtype='float32')
     y = label_input
@@ -226,7 +226,8 @@ def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False):
     x = tf.keras.layers.Add()([x, xr])
 
     # MDAM
-    x = MultiDimensionalAttention(channels=64)(x)
+    if mdam:
+        x = MultiDimensionalAttention(channels=64)(x)
 
     # fifth block
     x = tf.keras.layers.BatchNormalization()(x)

@@ -23,6 +23,7 @@ parser.add_argument("--epochs", type=int, default=10)
 parser.add_argument("--batch_size", type=int, default=64)
 parser.add_argument("--aeons", type=int, default=1)
 parser.add_argument("--ensemble_size", type=int, default=5)
+parser.add_argument("--mdam", type=bool, default=False)
 args = parser.parse_args()
 
 target_sr, \
@@ -96,7 +97,7 @@ for k_ensemble in np.arange(ensemble_size):
 
     # compile model
     data_input, label_input, loss_output, loss_output_ssl, loss_output_ssl2 = model_emb_cnn(num_classes=num_classes_4train,
-                                                             raw_dim=eval_raw.shape[1], n_subclusters=n_subclusters, use_bias=False)
+                                                             raw_dim=eval_raw.shape[1], n_subclusters=n_subclusters, use_bias=False, mdam=args.mdam)
     model = tf.keras.Model(inputs=[data_input, label_input], outputs=[loss_output, loss_output_ssl, loss_output_ssl2])
     model.compile(loss=[mixupLoss, mixupLoss, mixupLoss], optimizer=tf.keras.optimizers.Adam() ,loss_weights=[1,0,1])
     print(model.summary())
