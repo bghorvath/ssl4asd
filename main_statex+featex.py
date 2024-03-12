@@ -23,7 +23,7 @@ parser.add_argument("--epochs", type=int, default=10)
 parser.add_argument("--batch_size", type=int, default=64)
 parser.add_argument("--aeons", type=int, default=1)
 parser.add_argument("--ensemble_size", type=int, default=5)
-parser.add_argument("--mdam", type=bool, default=False)
+parser.add_argument("--mdam", action="store_true")
 args = parser.parse_args()
 
 target_sr, \
