@@ -29,20 +29,24 @@ class TemporalAttention(tf.keras.layers.Layer):
 
 
 class FrequencyAttention(tf.keras.layers.Layer):
-    def __init__(self, frequency_dim, reduction_ratio=16, **kwargs):
+    def __init__(self, reduction_ratio=8, **kwargs):
         super(FrequencyAttention, self).__init__(**kwargs)
-        self.frequency_dim = frequency_dim
         self.reduction_ratio = reduction_ratio
-        self.mlp = tf.keras.Sequential([
-            tf.keras.layers.Dense(1 // reduction_ratio, activation='elu', name='frequency_attention_dense1'),
-            tf.keras.layers.Dense(1, activation='sigmoid', name='frequency_attention_dense2')
+        self.mlp = None
+
+    def build(self, input_shape):
+        self.mlp = tf.keras.Sequential([            
+            tf.keras.layers.Dense(input_shape[2] // self.reduction_ratio, activation='elu', use_bias=False, name='frequency_attention_dense1'),
+            tf.keras.layers.Dense(input_shape[2], activation='sigmoid', use_bias=False, name='frequency_attention_dense2')
         ], name='frequency_attention_mlp')
+        super().build(input_shape)
 
     def call(self, inputs):
         max_pool = tf.reduce_max(inputs, axis=[1, 3], keepdims=True)
-        frequency_weights = self.mlp(max_pool)
-        frequency_weights = tf.keras.layers.Reshape((1, inputs.shape[2], 1), name='frequency_attention_reshape')(frequency_weights)
-        return frequency_weights
+        max_pool_reshaped = tf.reshape(max_pool, [-1, max_pool.shape[2]])
+        frequency_weights = self.mlp(max_pool_reshaped)
+        frequency_weights = tf.reshape(frequency_weights, [-1, 1, frequency_weights.shape[1], 1])
+        return tf.multiply(inputs, frequency_weights)
 
 
 class MultiDimensionalAttention(tf.keras.layers.Layer):
