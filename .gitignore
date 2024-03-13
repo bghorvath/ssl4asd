@@ -2,5 +2,4 @@ __pycache__
 *.npy
 *.h5
 *.csv
-dev_data/*
-eval_data/*
+*.wav
