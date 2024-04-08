@@ -97,14 +97,15 @@ def length_norm(mat):
     return norm_mat
 
 
-def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False, mdam=False):
+def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False, mdam=False, mixup=False, statex=False, featex=False):
     data_input = tf.keras.layers.Input(shape=(raw_dim, 1), dtype='float32')
     label_input = tf.keras.layers.Input(shape=(num_classes), dtype='float32')
     y = label_input
     x = data_input
     l2_weight_decay = tf.keras.regularizers.l2(1e-5)
-    x_mix = x
-    x_mix, y_mix = MixupLayer(prob=0.5)([x, y])
+    x_mix, y_mix = x, y
+    if mixup:
+        x_mix, y_mix = MixupLayer(prob=0.5)([x, y])
 
     # FFT
     x = tf.keras.layers.Lambda(lambda x: tf.math.abs(tf.signal.fft(tf.complex(x[:, :, 0], tf.zeros_like(x[:, :, 0])))[:, :int(raw_dim / 2)]))(x_mix)
@@ -142,7 +143,8 @@ def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False, mdam=Fals
     x = tf.keras.layers.Reshape((raw_dim,))(x_mix)
     x = MagnitudeSpectrogram(16000, 1024, 512, f_max=8000, f_min=200)(x)
 
-    x, y = StatExLayer(prob=0.5)([x,y_mix])
+    if statex:
+        x, y = StatExLayer(prob=0.5)([x,y_mix])
 
     x = tf.keras.layers.Lambda(lambda x: x-tf.math.reduce_mean(x, axis=1, keepdims=True))(x) # CMN-like normalization
     x = tf.keras.layers.BatchNormalization(axis=-2)(x)
@@ -258,7 +260,11 @@ def model_emb_cnn(num_classes, raw_dim, n_subclusters, use_bias=False, mdam=Fals
     x = tf.keras.layers.Flatten(name='flat')(x)
     x = tf.keras.layers.BatchNormalization()(x)
     emb_mel = tf.keras.layers.Dense(128, kernel_regularizer=l2_weight_decay, name='emb_mel', use_bias=use_bias)(x)
-    emb_mel_ssl, emb_fft_ssl, y_ssl = AugLayer(prob=0.5)([emb_mel,emb_fft,y])
+    
+    emb_mel_ssl, emb_fft_ssl, y_ssl = emb_mel, emb_fft, y
+    if featex:
+        emb_mel_ssl, emb_fft_ssl, y_ssl = AugLayer(prob=0.5)([emb_mel,emb_fft,y])
+
     # prepare output
     x = tf.keras.layers.Concatenate(axis=-1)([emb_fft, emb_mel])
     x_ssl = tf.keras.layers.Concatenate(axis=-1)([emb_fft_ssl, emb_mel_ssl])
