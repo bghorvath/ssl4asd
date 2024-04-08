@@ -106,6 +106,8 @@ for k_ensemble in np.arange(ensemble_size):
     model = tf.keras.Model(inputs=[data_input, label_input], outputs=[loss_output, loss_output_ssl, loss_output_ssl2])
     model.compile(loss=[mixupLoss, mixupLoss, mixupLoss], optimizer=tf.keras.optimizers.Adam() ,loss_weights=[1,0,1])
     print(model.summary())
+    tensorboard_callback = keras.callbacks.TensorBoard(log_dir="./logs", update_freq=1)
+
     for k in np.arange(aeons):
         print('ensemble iteration: ' + str(k_ensemble+1))
         print('aeon: ' + str(k+1))
@@ -115,7 +117,9 @@ for k_ensemble in np.arange(ensemble_size):
             model.fit(
                 [train_raw, y_train_cat_4train], [y_train_cat_4train,y_train_cat_4train,y_train_cat_4train], verbose=1,
                 batch_size=batch_size, epochs=epochs,
-                validation_data=([eval_raw, y_eval_cat_4train], [y_eval_cat_4train,y_eval_cat_4train,y_eval_cat_4train]))
+                validation_data=([eval_raw, y_eval_cat_4train], [y_eval_cat_4train,y_eval_cat_4train,y_eval_cat_4train]),
+                callbacks=[tensorboard_callback]
+                )
             model.save(weight_path)
         else:
             model = tf.keras.models.load_model(weight_path,
